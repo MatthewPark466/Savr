@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Food Website</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      text-align: center;
+      padding: 50px;
+    }
+    h1 {
+      color: #d35400;
+    }
+    .menu {
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      width: 300px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .menu-item {
+      margin: 10px 0;
+    }
+    button {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #219150;
+    }
+  </style>
+</head>
+<body>
+  <h1>🍔 Welcome to My Food Site 🍕</h1>
+  <p>This is just a starter homepage.</p>
+
+  <div class="menu">
+    <h2>Menu</h2>
+    <div class="menu-item">🍕 Pizza - $10</div>
+    <div class="menu-item">🍔 Burger - $8</div>
+    <div class="menu-item">🥗 Salad - $6</div>
+    <button onclick="alert('This will later connect to Firebase!')">
+      Place Order
+    </button>
+  </div>
+</body>
+</html>
