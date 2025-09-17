@@ -2,53 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My Food Website</title>
+  <title>Savr | Reduce Food Waste</title>
   <style>
+    /* Reset & basics */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: Arial, sans-serif;
-      background: #f8f8f8;
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(135deg, #f7f9fc, #eef2f7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #2c3e50;
+    }
+
+    /* Header */
+    header {
       text-align: center;
-      padding: 50px;
+      margin-bottom: 40px;
     }
-    h1 {
-      color: #d35400;
+    header h1 {
+      font-size: 3rem;
+      color: #27ae60;
+      margin-bottom: 10px;
     }
-    .menu {
-      margin: 20px auto;
-      padding: 20px;
-      background: white;
-      width: 300px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    header p {
+      font-size: 1.2rem;
+      color: #555;
     }
-    .menu-item {
-      margin: 10px 0;
+
+    /* Button section */
+    .button-container {
+      display: flex;
+      gap: 20px;
     }
-    button {
-      background: #27ae60;
-      color: white;
+    .role-btn {
+      padding: 20px 40px;
+      font-size: 1.2rem;
+      font-weight: 600;
       border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
+      border-radius: 12px;
       cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    button:hover {
-      background: #219150;
+    .role-btn.customer {
+      background: #27ae60;
+      color: #fff;
+    }
+    .role-btn.customer:hover {
+      background: #1e874b;
+    }
+    .role-btn.restaurant {
+      background: #3498db;
+      color: #fff;
+    }
+    .role-btn.restaurant:hover {
+      background: #2c80b4;
+    }
+
+    /* Footer */
+    footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 0.9rem;
+      color: #777;
     }
   </style>
 </head>
 <body>
-  <h1>🍔 Welcome to My Food Site 🍕</h1>
-  <p>This is just a starter homepage.</p>
+  <header>
+    <h1>🌱 Savr</h1>
+    <p>Connecting customers with restaurants that have excess food.</p>
+  </header>
 
-  <div class="menu">
-    <h2>Menu</h2>
-    <div class="menu-item">🍕 Pizza - $10</div>
-    <div class="menu-item">🍔 Burger - $8</div>
-    <div class="menu-item">🥗 Salad - $6</div>
-    <button onclick="alert('This will later connect to Firebase!')">
-      Place Order
+  <div class="button-container">
+    <button class="role-btn customer" onclick="alert('Customer portal coming soon!')">
+      I’m a Customer
+    </button>
+    <button class="role-btn restaurant" onclick="alert('Restaurant portal coming soon!')">
+      I’m a Restaurant
     </button>
   </div>
+
+  <footer>
+    © 2025 Savr — Let’s fight food waste together.
+  </footer>
 </body>
 </html>
