@@ -1,28 +1,20 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { 
-
     getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged
-
-}
-
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {
     getFirestore,
     doc,
-    setDoc
+    setDoc,
+    getDoc,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-}
-
-from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-
+// Firebase config (replace with your own project values)
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "your-project.firebaseapp.com",
@@ -32,33 +24,39 @@ const firebaseConfig = {
     appId: "YOUR_APP_ID"
 };
 
+// Init Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export async funtion signup(email, password, role) {
+// Sign Up
+export async function signup(email, password, role) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await setDoc(doc(db, "users", cred.user.uid), {
         email,
         role,
-        createdAt: Date.now()
-
+        createdAt: serverTimestamp()
     });
     return cred.user;
 }
 
-//login
+// Login
 export async function login(email, password) {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
     const cred = await signInWithEmailAndPassword(auth, email, password);
     return cred.user;
 }
 
-//logout
+// Logout
 export async function logout() {
     await signOut(auth);
 }
 
+// Auth listener
+export function onAuthChange(callback) {
+    return onAuthStateChanged(auth, callback);
+}
+
+export { auth, db, doc, getDoc };
 export function onAuthChange(callback) {
     return onAuthStateChanged(auth, callback);
 }

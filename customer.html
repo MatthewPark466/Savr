@@ -55,35 +55,6 @@
   <a href="signup.html">Don’t have an account? Sign Up</a><br>
   <a href="index.html">⬅ Back to Home</a>
 
-  <script type=""module">
-  import { login, db } from "./firebase.js;
-  import { doc, getDoc { from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-  const form = document.querySelector("form");
-  const msg = document.getElementById("message");
-  
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    
-    const email = form.identifier.value;
-    const password = form.password.value;
-    
-    try {
-      const user = await login(email, password);
-      
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if(snap.exists()) {
-        const data = snap.data();
-        msg.textContent = `login successful. You are signed in as ${data.role}.`;
-        msg.style.color = "#27ae60"; 
-      } else {
-        msg.textContent = "No role found. please contact support.";
-        msg.style.color = "red";
-      }
-    } catch (err) {
-      msg.textContent = "Login failed: " + err.message;
-      msg.style.color = "red";
-    }
-  });
-  </script>
+  <script type="module" src="login.js"></script>
 </body>
 </html>
