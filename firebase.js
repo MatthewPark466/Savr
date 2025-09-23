@@ -1,9 +1,9 @@
-import { initializeAppp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { 
 
     getAuth,
-    createUserWithEmailPassword,
-    signInWithEmainPassword,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
     signOut,
     onAuthStateChanged
 
@@ -33,8 +33,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export async funtion signup(email, password, role) {
-    const cred = await createUserWithEmailPassword(auth, email, password);
+export async function signup(email, password, role) {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
     await setDoc(doc(db, "users", cred.user.uid), {
         email,
         role,
@@ -46,7 +46,7 @@ export async funtion signup(email, password, role) {
 
 //login
 export async function login(email, password) {
-    const cred = await signInWithEmainPassword(auth, email, password);
+    const cred = await signInWithEmailAndPassword(auth, email, password);
     return cred.user;
 }
 

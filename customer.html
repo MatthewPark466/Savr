@@ -16,6 +16,23 @@
       margin-bottom: 10px;
     }
     p { color: #555; font-size: 1.1rem; margin-bottom: 30px; }
+    form {
+      max-width: 320px;
+      margin: auto;
+      backround: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 px 12px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 100%; padding: 10px; margin: 10px 0;
+      border: 1px solid #ccc; border-radius: 6px;
+    }
+    button {
+      background: #27ae60; color: #fff; border: none;
+      padding: 10px; width: 100%; font-size: 1rem;
+      border-radius: 6px; cursor: pointer;
+    }
     a {
       display: inline-block;
       margin-top: 20px;
@@ -36,5 +53,36 @@
   </form>
   <a href="signup.html" class="signup-link">Don’t have an account? Sign Up</a>
   <a href="index.html">⬅ Back to Home</a>
+
+  <script type=""module">
+  import { login, db } from "./firebase.js;
+  import { doc, getDoc { from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+  const form = document.querySelector("form");
+  const msg = document.getElementById("message");
+  
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    
+    const email = form.identifier.value;
+    const password = form.password.value;
+    
+    try {
+      const user = await login(email, password);
+      
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if(snap.exists()) {
+        const data = snap.data();
+        msg.textContent = `login successful. You are signed in as ${data.role}.`;
+        msg.style.color = "#27ae60"; 
+      } else {
+        msg.textContent = "No role found. please contact support.";
+        msg.style.color = "red";
+      }
+    } catch (err) {
+      msg.textContent = "Login failed: " + err.message;
+      msg.style.color = "red";
+    }
+  });
+  </script>
 </body>
 </html>
