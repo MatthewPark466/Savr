@@ -1,7 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import { 
 
     getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
@@ -46,6 +49,7 @@ export async funtion signup(email, password, role) {
 
 //login
 export async function login(email, password) {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
     const cred = await signInWithEmailAndPassword(auth, email, password);
     return cred.user;
 }
