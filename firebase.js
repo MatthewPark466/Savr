@@ -16,12 +16,12 @@ import {
 
 // Firebase config (replace with your own project values)
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyD-9i_vM2hL0y8ueqL2mfRwL2Clr-5yKD8",
+    authDomain: "cscongressionalappchallenge.firebaseapp.com",
+    projectId: "cscongressionalappchallenge",
+    storageBucket: "cscongressionalappchallenge.firebasestorage.app",
+    messagingSenderId: "638513027367",
+    appId: "1:638513027367:web:bc8471a2ff3817b6ccf102"
 };
 
 // Init Firebase
