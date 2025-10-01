@@ -31,13 +31,18 @@ const db = getFirestore(app);
 
 // Sign Up
 export async function signup(email, password, role) {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db, "users", cred.user.uid), {
-        email,
-        role,
-        createdAt: serverTimestamp()
-    });
-    return cred.user;
+    try{
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, "users", cred.user.uid), {
+            email,
+            role,
+            createdAt: serverTimestamp()
+        });
+        return cred.user;
+    } catch (err) {
+        console.error("Error during sign up:", err);
+        throw err; 
+    }
 }
 
 // Login
@@ -56,9 +61,16 @@ export function onAuthChange(callback) {
     return onAuthStateChanged(auth, callback);
 }
 
-export { auth, db, doc, getDoc };
-export function onAuthChange(callback) {
-    return onAuthStateChanged(auth, callback);
-}
+export {
+  auth,
+  db,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  onAuthChange,
+  signup,
+  login,
+  logout
+};
 
-export { auth, db };
