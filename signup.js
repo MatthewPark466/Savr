@@ -18,7 +18,7 @@ if (signupForm) {
     }
 
     try {
-      await signup(email, password, role);
+      await signup(email, password, role, username);
       if (role === "customer") {
         window.location.href = "customer_dashboard.html";
       } else {

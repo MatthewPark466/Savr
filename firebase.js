@@ -36,6 +36,7 @@ export async function signup(email, password, role) {
         await setDoc(doc(db, "users", cred.user.uid), {
             email,
             role,
+            username,
             createdAt: serverTimestamp()
         });
         return cred.user;
@@ -48,6 +49,15 @@ export async function signup(email, password, role) {
 // Login
 export async function login(email, password) {
     const cred = await signInWithEmailAndPassword(auth, email, password);
+    const user = cred.user;
+
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+        throw new Error("This user is not signed up.");
+    }
+    
     return cred.user;
 }
 
