@@ -11,7 +11,11 @@ import {
     doc,
     setDoc,
     getDoc,
-    serverTimestamp
+    serverTimestamp, 
+    collection,
+    query,
+    where,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase config (replace with your own project values)
@@ -30,8 +34,15 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Sign Up
-export async function signup(email, password, role) {
+export async function signup(email, password, role, username) {
     try{
+        //checks if username exists already
+        const q = query(collection(db, "users"), where("username", "==", username));
+        const snap = await getDocs(q);
+        if(!snap.empty) {
+            throw new Error("username already taken. Please choose another");
+        }
+
         const cred = await createUserWithEmailAndPassword(auth, email, password);
         await setDoc(doc(db, "users", cred.user.uid), {
             email,
@@ -47,7 +58,20 @@ export async function signup(email, password, role) {
 }
 
 // Login
-export async function login(email, password) {
+export async function login(input, password) {
+    let email = input; 
+
+    //checks if the input is email, if not then searches for the associated username
+    if(!input.incudes("@")) {
+        const q = query(collection(db, "users"), where("username", "==", input));
+
+        if(snap.empty) {
+            throw new Error("No account found with the username");
+        }
+
+        email = snap.docs[0].data().email; //finds associated email
+    }
+
     const cred = await signInWithEmailAndPassword(auth, email, password);
     const user = cred.user;
 
@@ -59,7 +83,7 @@ export async function login(email, password) {
     }
 
     // Return both user and Firestore data
-    return { user, data: snap.data() };
+    return { user, data: userSnap.data() };
 }
 
 // Logout
