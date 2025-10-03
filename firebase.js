@@ -57,8 +57,9 @@ export async function login(email, password) {
     if (!snap.exists()) {
         throw new Error("This user is not signed up.");
     }
-    
-    return cred.user;
+
+    // Return both user and Firestore data
+    return { user, data: snap.data() };
 }
 
 // Logout

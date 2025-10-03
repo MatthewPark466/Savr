@@ -13,18 +13,21 @@ if (loginForm) {
     const role = loginForm.role.value;
 
     try {
-      const { user, data } = await login(email, password);
-
-      if(data.role!==role){
+      const result = await login(email, password);
+      // result will be { user, data }
+      if (!result || !result.data) {
+        alert("Account does not exist or is missing data.");
+        return;
+      }
+      if (result.data.role !== role) {
         alert("❌ Role mismatch. Please use the correct login page.");
         return;
       }
-
-      if(role==="customer"){
+      if (role === "customer") {
         window.location.href = "customer_dashboard.html";
       } else {
         window.location.href = "restaurant_dashboard.html";
-      } 
+      }
     } catch (err) {
       alert("Login failed: " + err.message);
     }
