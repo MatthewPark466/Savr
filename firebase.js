@@ -1,4 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+// Import the functions you need from the SDKs you need
 import { 
     getAuth,
     createUserWithEmailAndPassword,
@@ -16,12 +18,13 @@ import {
 
 // Firebase config (replace with your own project values)
 const firebaseConfig = {
-    apiKey: "AIzaSyD-9i_vM2hL0y8ueqL2mfRwL2Clr-5yKD8",
-    authDomain: "cscongressionalappchallenge.firebaseapp.com",
-    projectId: "cscongressionalappchallenge",
-    storageBucket: "cscongressionalappchallenge.firebasestorage.app",
-    messagingSenderId: "638513027367",
-    appId: "1:638513027367:web:bc8471a2ff3817b6ccf102"
+    apiKey: "AIzaSyDPiNlImOOEzGus2CxMcnisnRMPRrsxcP0", 
+    authDomain: "savr-90c8d.firebaseapp.com", 
+    projectId: "savr-90c8d", 
+    storageBucket: "savr-90c8d.firebasestorage.app", 
+    messagingSenderId: "333467669609", 
+    appId: "1:333467669609:web:47245aa7aeaa1127ee3ef8", 
+    measurementId: "G-M6NJ2CWE6P"
 };
 
 // Init Firebase
@@ -30,13 +33,13 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Sign Up
-export async function signup(email, password, role) {
+async function signup(email, password, role, username) {
     try{
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const cred = await createUserWithEmailAndPassword(auth, email, password,);
         await setDoc(doc(db, "users", cred.user.uid), {
             email,
-            role,
             username,
+            role,
             createdAt: serverTimestamp()
         });
         return cred.user;
@@ -47,28 +50,37 @@ export async function signup(email, password, role) {
 }
 
 // Login
-export async function login(email, password) {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    const user = cred.user;
+async function login(email, password) {
+    try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        const user = cred.user;
 
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
 
-    if (!snap.exists()) {
-        throw new Error("This user is not signed up.");
+        if (!snap.exists()) {
+            throw new Error("This user is not signed up.");
+        }
+    
+        return {user, data: snap.data()};
+    }   catch (err) {
+        console.error("Error during login:", err);
+        throw err; 
     }
-
-    // Return both user and Firestore data
-    return { user, data: snap.data() };
 }
 
 // Logout
-export async function logout() {
-    await signOut(auth);
+async function logout() {
+    try {
+        await signOut(auth);
+    } catch (err) {
+        console.error("Error during logout:", err);
+        throw err; 
+    }
 }
 
 // Auth listener
-export function onAuthChange(callback) {
+function onAuthChange(callback) {
     return onAuthStateChanged(auth, callback);
 }
 
@@ -82,6 +94,7 @@ export {
   onAuthChange,
   signup,
   login,
-  logout
+  logout,
+  onAuthStateChanged
 };
 

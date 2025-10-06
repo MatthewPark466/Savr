@@ -25,7 +25,7 @@ if (signupForm) {
         window.location.href = "restaurant_dashboard.html";
       }
     } catch (err) {
-      alert("Signup failed: " + err.message);
+      alert("Signup failed: " + err.code);
     }
   });
 }
