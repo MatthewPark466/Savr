@@ -13,7 +13,11 @@ import {
     doc,
     setDoc,
     getDoc,
-    serverTimestamp
+    serverTimestamp,
+    collection,
+    query,
+    where,
+    getdocs
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase config (replace with your own project values)
@@ -35,6 +39,14 @@ const db = getFirestore(app);
 // Sign Up
 async function signup(email, password, role, username) {
     try{
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("username", "==", username));
+        const querySnapshot = await getdocs(q);
+        
+        if (!querySnapshot.empty) {
+            throw new Error("Username already taken.");
+        }
+
         const cred = await createUserWithEmailAndPassword(auth, email, password,);
         await setDoc(doc(db, "users", cred.user.uid), {
             email,
@@ -42,6 +54,7 @@ async function signup(email, password, role, username) {
             role,
             createdAt: serverTimestamp()
         });
+
         return cred.user;
     } catch (err) {
         console.error("Error during sign up:", err);
@@ -50,9 +63,24 @@ async function signup(email, password, role, username) {
 }
 
 // Login
-async function login(email, password) {
+async function login(input, password) {
     try {
-        const cred = await signInWithEmailAndPassword(auth, email, password);
+        let emailToUse = input;
+
+        // Check if input is an email or username
+        if(!input.includes("@")) {
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("username", "==", input));
+            const querySnapshot = await getdocs(q);
+
+            if (querySnapshot.empty) {
+                throw new Error("No user found with this username.");
+            }
+
+            emailToUse = querySnapshot.docs[0].data().email;
+        }
+
+        const cred = await signInWithEmailAndPassword(auth, emailToUse, password);
         const user = cred.user;
 
         const ref = doc(db, "users", user.uid);
