@@ -22,7 +22,7 @@ import {
     collection,
     query,
     where,
-    getdocs
+    getDocs
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase config (replace with your own project values)
@@ -46,7 +46,7 @@ async function signup(email, password, role, username) {
     try{
         const usersRef = collection(db, "users");
         const q = query(usersRef, where("username", "==", username));
-        const querySnapshot = await getdocs(q);
+        const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
             throw new Error("Username already taken.");
@@ -76,7 +76,7 @@ async function login(input, password) {
         if(!input.includes("@")) {
             const usersRef = collection(db, "users");
             const q = query(usersRef, where("username", "==", input));
-            const querySnapshot = await getdocs(q);
+            const querySnapshot = await getDocs(q);
 
             if (querySnapshot.empty) {
                 throw new Error("No user found with this username.");
