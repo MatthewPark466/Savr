@@ -1,120 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Savr | Restaurant Dashboard</title>
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background: #f9fafc;
-      margin: 0;
-      padding: 0;
-    }
+<script type="module">
+import { db, auth, onAuthChange, setDoc, doc, collection, serverTimestamp, getDoc, getDocs } from './firebase.js';
 
-    header {
-      background: #27ae60;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
+let menu = [];
 
-    header h1 { margin: 0; }
-    header p { margin: 5px 0 0; }
+// Listen for logged in restaurant
+onAuthChange(async (user) => {
+  if (!user) return;
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (snap.exists() && snap.data().role === "restaurant") {
+    loadMenu(user.uid);
+  }
+});
 
-    main {
-      padding: 30px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
+// Add new item
+document.querySelector('.card button').addEventListener('click', async () => {
+  const name = prompt("Item name?");
+  const price = parseFloat(prompt("Price?"));
+  const qty = parseInt(prompt("Quantity?"));
+  if (!name || !price || !qty) return alert("Invalid input");
 
-    .card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
+  const itemId = Date.now().toString();
+  await setDoc(doc(db, "restaurants", auth.currentUser.uid, "menu", itemId), {
+    name, price, quantity: qty
+  });
 
-    .card h3 {
-      margin-top: 0;
-      color: #2c3e50;
-    }
+  loadMenu(auth.currentUser.uid);
+});
 
-    .card p {
-      color: #555;
-      margin-bottom: 15px;
-    }
+async function loadMenu(restaurantId) {
+  const menuRef = collection(db, "restaurants", restaurantId, "menu");
+  const snapshot = await getDocs(menuRef);
+  menu = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    .card button {
-      background: #3498db;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
+  const container = document.querySelector('.card .placeholder');
+  if (!menu.length) {
+    container.innerHTML = 'No items listed yet';
+    return;
+  }
 
-    .card button:hover {
-      background: #2c80b4;
-    }
-
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: #777;
-    }
-
-    .placeholder {
-      background: #ecf0f1;
-      border-radius: 8px;
-      height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #7f8c8d;
-      font-size: 0.9em;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Savr Restaurant Dashboard 🍽️</h1>
-    <p>Manage your surplus, track sales, and fight food waste</p>
-  </header>
-
-  <main>
-    <div class="card">
-      <h3>📦 Current Listings</h3>
-      <p>View and update available surplus items.</p>
-      <div class="placeholder">No items listed yet</div>
-      <button>Add New Listing</button>
-    </div>
-
-    <div class="card">
-      <h3>🧾 Recent Orders</h3>
-      <p>See your latest customer orders.</p>
-      <div class="placeholder">No orders yet</div>
-      <button>View All Orders</button>
-    </div>
-
-    <div class="card">
-      <h3>📊 Sales Summary</h3>
-      <p>Track how much food you’ve saved and sold.</p>
-      <div class="placeholder">Analytics coming soon</div>
-      <button>View Analytics</button>
-    </div>
-
-    <div class="card">
-      <h3>⚙️ Account Settings</h3>
-      <p>Update restaurant info and preferences.</p>
-      <div class="placeholder">Settings panel placeholder</div>
-      <button>Edit Settings</button>
-    </div>
-  </main>
-
-  <footer>
-    © 2025 Savr — Empowering restaurants to reduce food waste.
-  </footer>
-</body>
-</html>
+  container.innerHTML = menu.map(item => 
+    `<div><strong>${item.name}</strong> — $${item.price} (${item.quantity} left)</div>`
+  ).join('');
+}
+</script>
