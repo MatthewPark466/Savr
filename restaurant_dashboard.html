@@ -1,11 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Restaurant Dashboard</title>
-</head>
-<body>
-  <h1>Welcome to the Restaurant Dashboard!</h1>
-  <p>You have successfully logged in as a restaurant.</p>
-</body>
-</html>
+<script type="module">
+import { db, auth, onAuthChange, setDoc, doc, collection, serverTimestamp, getDoc, getDocs } from './firebase.js';
+
+let menu = [];
+
+// Listen for logged in restaurant
+onAuthChange(async (user) => {
+  if (!user) return;
+  const snap = await getDoc(doc(db, "users", user.uid));
+  if (snap.exists() && snap.data().role === "restaurant") {
+    loadMenu(user.uid);
+  }
+});
+
+// Add new item
+document.querySelector('.card button').addEventListener('click', async () => {
+  const name = prompt("Item name?");
+  const price = parseFloat(prompt("Price?"));
+  const qty = parseInt(prompt("Quantity?"));
+  if (!name || !price || !qty) return alert("Invalid input");
+
+  const itemId = Date.now().toString();
+  await setDoc(doc(db, "restaurants", auth.currentUser.uid, "menu", itemId), {
+    name, price, quantity: qty
+  });
+
+  loadMenu(auth.currentUser.uid);
+});
+
+async function loadMenu(restaurantId) {
+  const menuRef = collection(db, "restaurants", restaurantId, "menu");
+  const snapshot = await getDocs(menuRef);
+  menu = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  const container = document.querySelector('.card .placeholder');
+  if (!menu.length) {
+    container.innerHTML = 'No items listed yet';
+    return;
+  }
+
+  container.innerHTML = menu.map(item => 
+    `<div><strong>${item.name}</strong> — $${item.price} (${item.quantity} left)</div>`
+  ).join('');
+}
+</script>

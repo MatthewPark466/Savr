@@ -1,4 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+// Import the functions you need from the SDKs you need
 import { 
     getAuth,
     createUserWithEmailAndPassword,
@@ -16,16 +18,22 @@ import {
     query,
     where,
     getDocs
+    serverTimestamp,
+    collection,
+    query,
+    where,
+    getdocs
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase config (replace with your own project values)
 const firebaseConfig = {
-    apiKey: "AIzaSyD-9i_vM2hL0y8ueqL2mfRwL2Clr-5yKD8",
-    authDomain: "cscongressionalappchallenge.firebaseapp.com",
-    projectId: "cscongressionalappchallenge",
-    storageBucket: "cscongressionalappchallenge.firebasestorage.app",
-    messagingSenderId: "638513027367",
-    appId: "1:638513027367:web:bc8471a2ff3817b6ccf102"
+    apiKey: "AIzaSyDPiNlImOOEzGus2CxMcnisnRMPRrsxcP0", 
+    authDomain: "savr-90c8d.firebaseapp.com", 
+    projectId: "savr-90c8d", 
+    storageBucket: "savr-90c8d.firebasestorage.app", 
+    messagingSenderId: "333467669609", 
+    appId: "1:333467669609:web:47245aa7aeaa1127ee3ef8", 
+    measurementId: "G-M6NJ2CWE6P"
 };
 
 // Init Firebase
@@ -34,22 +42,24 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // Sign Up
-export async function signup(email, password, role, username) {
+async function signup(email, password, role, username) {
     try{
-        //checks if username exists already
-        const q = query(collection(db, "users"), where("username", "==", username));
-        const snap = await getDocs(q);
-        if(!snap.empty) {
-            throw new Error("username already taken. Please choose another");
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("username", "==", username));
+        const querySnapshot = await getdocs(q);
+        
+        if (!querySnapshot.empty) {
+            throw new Error("Username already taken.");
         }
 
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        const cred = await createUserWithEmailAndPassword(auth, email, password,);
         await setDoc(doc(db, "users", cred.user.uid), {
             email,
-            role,
             username,
+            role,
             createdAt: serverTimestamp()
         });
+
         return cred.user;
     } catch (err) {
         console.error("Error during sign up:", err);
@@ -58,41 +68,52 @@ export async function signup(email, password, role, username) {
 }
 
 // Login
-export async function login(input, password) {
-    let email = input; 
+async function login(input, password) {
+    try {
+        let emailToUse = input;
 
-    //checks if the input is email, if not then searches for the associated username
-    if(!input.incudes("@")) {
-        const q = query(collection(db, "users"), where("username", "==", input));
+        // Check if input is an email or username
+        if(!input.includes("@")) {
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("username", "==", input));
+            const querySnapshot = await getdocs(q);
 
-        if(snap.empty) {
-            throw new Error("No account found with the username");
+            if (querySnapshot.empty) {
+                throw new Error("No user found with this username.");
+            }
+
+            emailToUse = querySnapshot.docs[0].data().email;
         }
 
-        email = snap.docs[0].data().email; //finds associated email
+        const cred = await signInWithEmailAndPassword(auth, emailToUse, password);
+        const user = cred.user;
+
+        const ref = doc(db, "users", user.uid);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+            throw new Error("This user is not signed up.");
+        }
+    
+        return {user, data: snap.data()};
+    }   catch (err) {
+        console.error("Error during login:", err);
+        throw err; 
     }
-
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    const user = cred.user;
-
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-        throw new Error("This user is not signed up.");
-    }
-
-    // Return both user and Firestore data
-    return { user, data: userSnap.data() };
 }
 
 // Logout
-export async function logout() {
-    await signOut(auth);
+async function logout() {
+    try {
+        await signOut(auth);
+    } catch (err) {
+        console.error("Error during logout:", err);
+        throw err; 
+    }
 }
 
 // Auth listener
-export function onAuthChange(callback) {
+function onAuthChange(callback) {
     return onAuthStateChanged(auth, callback);
 }
 
@@ -106,6 +127,7 @@ export {
   onAuthChange,
   signup,
   login,
-  logout
+  logout,
+  onAuthStateChanged
 };
 
