@@ -1,27 +1,35 @@
 <script type="module">
-import { db, auth, onAuthChange, setDoc, doc, collection, serverTimestamp, getDoc, getDocs } from './firebase.js';
+import { db, auth, onAuthChange, setDoc, doc, collection, serverTimestamp, getDocs, getDoc, logout } from './firebase.js';
 
-let menu = [];
-
-// Listen for logged in restaurant
+// Listen for restaurant login
 onAuthChange(async (user) => {
-  if (!user) return;
+  if (!user) {
+    window.location.href = "login.html"; // redirect to login if logged out
+    return;
+  }
+
   const snap = await getDoc(doc(db, "users", user.uid));
   if (snap.exists() && snap.data().role === "restaurant") {
     loadMenu(user.uid);
+  } else {
+    alert("You are not authorized for this page.");
+    window.location.href = "customer-dashboard.html";
   }
 });
 
 // Add new item
-document.querySelector('.card button').addEventListener('click', async () => {
+document.getElementById("addListingBtn").addEventListener("click", async () => {
   const name = prompt("Item name?");
   const price = parseFloat(prompt("Price?"));
   const qty = parseInt(prompt("Quantity?"));
-  if (!name || !price || !qty) return alert("Invalid input");
+  if (!name || isNaN(price) || isNaN(qty)) return alert("Invalid input");
 
   const itemId = Date.now().toString();
   await setDoc(doc(db, "restaurants", auth.currentUser.uid, "menu", itemId), {
-    name, price, quantity: qty
+    name,
+    price,
+    quantity: qty,
+    createdAt: serverTimestamp()
   });
 
   loadMenu(auth.currentUser.uid);
@@ -30,16 +38,22 @@ document.querySelector('.card button').addEventListener('click', async () => {
 async function loadMenu(restaurantId) {
   const menuRef = collection(db, "restaurants", restaurantId, "menu");
   const snapshot = await getDocs(menuRef);
-  menu = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-  const container = document.querySelector('.card .placeholder');
-  if (!menu.length) {
+  const container = document.getElementById("menuContainer");
+  if (snapshot.empty) {
     container.innerHTML = 'No items listed yet';
     return;
   }
 
-  container.innerHTML = menu.map(item => 
-    `<div><strong>${item.name}</strong> — $${item.price} (${item.quantity} left)</div>`
-  ).join('');
+  container.innerHTML = snapshot.docs.map(doc => {
+    const item = doc.data();
+    return `<div><strong>${item.name}</strong> — $${item.price} (${item.quantity} left)</div>`;
+  }).join('');
 }
+
+// logout
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await logout();
+  window.location.href = "login.html";
+});
 </script>
