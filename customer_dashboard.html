@@ -131,9 +131,15 @@
     }
 
     document.getElementById("logoutBtn").addEventListener("click", async () => {
-      await logout();
-      window.location.href = "login.html";
-    });
+  try {
+    await logout();
+    alert("Logged out successfully!");
+    window.location.href = "login.html";
+  } catch (error) {
+    console.error("Logout failed:", error);
+    alert("Error logging out.");
+  }
+});
   </script>
 </body>
 </html>

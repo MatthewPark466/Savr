@@ -18,11 +18,6 @@ import {
     query,
     where,
     getDocs
-    serverTimestamp,
-    collection,
-    query,
-    where,
-    getDocs
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Firebase config (replace with your own project values)
@@ -115,6 +110,12 @@ async function logout() {
 // Auth listener
 function onAuthChange(callback) {
     return onAuthStateChanged(auth, callback);
+}
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+
+export async function logout() {
+  await signOut(auth);
 }
 
 export {
