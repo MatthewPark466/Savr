@@ -5,141 +5,131 @@
   <title>SAVR | Customer Dashboard</title>
   <style>
     body {
-      font-family: "Segoe UI", Roboto, Arial, sans-serif;
-      background: #f9fafc;
-      text-align: center;
-      padding: 30px;
+      font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: #333;
     }
 
-    h1 { color: #27ae60; }
+    header {
+      background: #27ae60;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
     .restaurant-list {
       display: flex;
       flex-wrap: wrap;
+      gap: 20px;
       justify-content: center;
-      gap: 15px;
-      margin-top: 30px;
     }
+
     .restaurant-card {
       background: #fff;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      width: 260px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      width: 270px;
+      padding: 20px;
+      text-align: left;
+      transition: transform 0.2s;
     }
+
+    .restaurant-card:hover {
+      transform: translateY(-4px);
+    }
+
     .restaurant-card h3 {
       margin-bottom: 10px;
-      color: #333;
+      color: #27ae60;
     }
+
+    .restaurant-card p {
+      font-size: 14px;
+      color: #555;
+    }
+
     .restaurant-card button {
+      margin-top: 10px;
       background: #27ae60;
       border: none;
       color: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
+      padding: 10px 14px;
+      border-radius: 8px;
       cursor: pointer;
+      width: 100%;
+      font-size: 14px;
+      transition: background 0.2s;
     }
+
     .restaurant-card button:hover {
       background: #219150;
     }
 
     #logoutBtn {
+      display: block;
+      margin: 40px auto;
       background: #e74c3c;
       border: none;
       color: #fff;
       padding: 10px 20px;
       border-radius: 8px;
       cursor: pointer;
-      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    #logoutBtn:hover {
+      background: #c0392b;
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      color: #777;
+      margin-top: 50px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>Customer Dashboard</h1>
+    <p>Browse restaurants offering surplus meals</p>
+  </header>
 
-  <h1>Customer Dashboard</h1>
-  <p>Browse restaurants offering surplus meals.</p>
-  <div class="restaurant-list"></div>
-  <button id="logoutBtn">Logout</button>
-
-  <script type="module">
-    import { auth, db, onAuthChange, getDoc, getDocs, setDoc, doc, collection, serverTimestamp, logout } from './firebase.js';
-
-    onAuthChange(async (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
-
-      // Ensure role is customer
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists() || snap.data().role !== "customer") {
-        alert("Not authorized");
-        window.location.href = "restaurant_dashboard.html";
-        return;
-      }
-
-      loadRestaurants();
-    });
-
-    async function loadRestaurants() {
-      const restaurantsRef = collection(db, "restaurants");
-      const snapshot = await getDocs(restaurantsRef);
-      const listContainer = document.querySelector(".restaurant-list");
-      listContainer.innerHTML = "";
-
-      for (let rDoc of snapshot.docs) {
-        const rId = rDoc.id;
-        const rName = rDoc.data().name || "Restaurant";
-
-        const menuSnap = await getDocs(collection(db, "restaurants", rId, "menu"));
-
-        menuSnap.docs.forEach(itemDoc => {
-          const item = itemDoc.data();
-          if (item.quantity < 1) return; // skip sold out
-
-          const card = document.createElement("div");
-          card.className = "restaurant-card";
-          card.innerHTML = `
-            <h3>${rName}</h3>
-            <p>${item.name} — $${item.price} (${item.quantity} left)</p>
-            <button>Order Now</button>
-          `;
-          listContainer.appendChild(card);
-
-          card.querySelector("button").addEventListener("click", async () => {
-            // Place order
-            const orderId = Date.now().toString();
-            await setDoc(doc(db, "orders", orderId), {
-              customerId: auth.currentUser.uid,
-              restaurantId: rId,
-              itemName: item.name,
-              price: item.price,
-              quantity: 1,
-              createdAt: serverTimestamp()
-            });
-
-            // Reduce stock
-            await setDoc(doc(db, "restaurants", rId, "menu", itemDoc.id), {
-              ...item,
-              quantity: item.quantity - 1
-            });
-
-            alert(`Ordered ${item.name} from ${rName} for $${item.price}`);
-            loadRestaurants(); // refresh menu
-          });
-        });
-      }
-    }
-
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-  try {
-    await logout();
-    alert("Logged out successfully!");
-    window.location.href = "login.html";
-  } catch (error) {
-    console.error("Logout failed:", error);
-    alert("Error logging out.");
-  }
-});
-  </script>
+  <main>
+    <div class="restaurant-list">
+      <!-- Example skeleton cards -->
+      <div class="restaurant-card">
+        <h3>Green Leaf Café</h3>
+        <p>Avocado Toast — $5.00 (3 left)</p>
+        <button>Order Now</button>
+      </div>
+      <div class="restaurant-card">
+        <h3>Urban Bites</h3>
+        <p>Veggie Bowl — $7.50 (2 left)</p>
+        <button>Order Now</button>
+      </div>
+      <div class="restaurant-card">
+        <h3>Sunset Deli</h3>
+        <p>Chicken Wrap — $6.00 (5 left)</p>
+        <button>Order Now</button>
+      </div>
+    </div>
+    <div class="empty">More listings coming soon...</div>
+    <button id="logoutBtn">Logout</button>
+  </main>
 </body>
 </html>
