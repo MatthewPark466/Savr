@@ -1,63 +1,187 @@
-<!-- restaurant-dashboard.html -->
-<body>
-  <h1>Restaurant Dashboard</h1>
-  <div id="menuContainer" class="placeholder">No items listed yet</div>
-  <button id="addListingBtn">Add New Listing</button>
-  <button id="logoutBtn">Logout</button>
-
-  <script type="module">
-    import { auth, db, onAuthChange, getDoc, setDoc, doc, collection, getDocs, serverTimestamp, logout } from './firebase.js';
-
-    onAuthChange(async (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-        return;
-      }
-
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists() || snap.data().role !== "restaurant") {
-        alert("Not authorized");
-        window.location.href = "customer-dashboard.html";
-        return;
-      }
-
-      loadMenu(user.uid);
-    });
-
-    async function loadMenu(restaurantId) {
-      const menuRef = collection(db, "restaurants", restaurantId, "menu");
-      const snapshot = await getDocs(menuRef);
-      const container = document.getElementById("menuContainer");
-
-      if (snapshot.empty) {
-        container.innerHTML = "No items listed yet";
-        return;
-      }
-
-      container.innerHTML = snapshot.docs.map(doc => {
-        const item = doc.data();
-        return `<div><strong>${item.name}</strong> — $${item.price} (${item.quantity} left)</div>`;
-      }).join('');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SAVR | Restaurant Dashboard</title>
+  <style>
+    body {
+      font-family: "Inter", "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+      color: #333;
     }
 
-    document.getElementById("addListingBtn").addEventListener("click", async () => {
-      const name = prompt("Item name?");
-      const price = parseFloat(prompt("Price?"));
-      const quantity = parseInt(prompt("Quantity?"));
+    header {
+      background: #2c3e50;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
 
-      if (!name || isNaN(price) || isNaN(quantity)) return alert("Invalid input");
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
 
-      const itemId = Date.now().toString();
-      await setDoc(doc(db, "restaurants", auth.currentUser.uid, "menu", itemId), {
-        name, price, quantity, createdAt: serverTimestamp()
-      });
+    main {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      text-align: center;
+    }
 
-      loadMenu(auth.currentUser.uid);
-    });
+    #menuContainer {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
 
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-      await logout();
-      window.location.href = "login.html";
-    });
+    .menu-item {
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      text-align: left;
+    }
+
+    .menu-item h4 {
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+
+    .menu-item p {
+      color: #555;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .menu-item span {
+      color: #27ae60;
+      font-weight: bold;
+    }
+
+    .actions {
+      margin-top: 25px;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    button {
+      background: #27ae60;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #219150;
+    }
+
+    #logoutBtn {
+      background: #e74c3c;
+    }
+
+    #logoutBtn:hover {
+      background: #c0392b;
+    }
+
+    /* Modal for adding listing */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      width: 320px;
+      text-align: left;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+
+    .modal-content input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .modal-buttons button.cancel {
+      background: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Restaurant Dashboard</h1>
+  </header>
+
+  <main>
+    <div id="menuContainer">
+      <div class="menu-item">
+        <h4>Example Dish</h4>
+        <p>Price: <span>$6.99</span></p>
+        <p>Quantity: 5 left</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="addListingBtn">Add New Listing</button>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="listingModal" class="modal">
+    <div class="modal-content">
+      <h3>Add New Listing</h3>
+      <input type="text" placeholder="Item Name">
+      <input type="number" placeholder="Price">
+      <input type="number" placeholder="Quantity">
+      <div class="modal-buttons">
+        <button class="cancel">Cancel</button>
+        <button class="save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById("listingModal");
+    const addBtn = document.getElementById("addListingBtn");
+    const cancelBtn = document.querySelector(".cancel");
+
+    addBtn.addEventListener("click", () => modal.style.display = "flex");
+    cancelBtn.addEventListener("click", () => modal.style.display = "none");
+
+    window.onclick = (e) => {
+      if (e.target === modal) modal.style.display = "none";
+    };
   </script>
 </body>
+</html>
