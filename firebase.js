@@ -111,12 +111,6 @@ async function logout() {
 function onAuthChange(callback) {
     return onAuthStateChanged(auth, callback);
 }
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-
-
-export async function logout() {
-  await signOut(auth);
-}
 
 export {
   auth,
