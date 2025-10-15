@@ -11,17 +11,34 @@
       padding: 50px;
     }
     h1 {
-      color: #3498db;
+      color: #27ae60;
       font-size: 2.5rem;
       margin-bottom: 10px;
     }
     p { color: #555; font-size: 1.1rem; margin-bottom: 30px; }
+    form {
+      max-width: 320px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 px 12px rgba(0,0,0,0.1);
+    }
+    input {
+      width: 100%; padding: 10px; margin: 10px 0;
+      border: 1px solid #ccc; border-radius: 6px;
+    }
+    button {
+      background: #27ae60; color: #fff; border: none;
+      padding: 10px; width: 100%; font-size: 1rem;
+      border-radius: 6px; cursor: pointer;
+    }
     a {
       display: inline-block;
       margin-top: 20px;
       text-decoration: none;
-      color: #27ae60;
-      font-weight: bold;
+      color: #3498db;
+      font-weight: bold; 
     }
   </style>
 </head>
@@ -33,11 +50,12 @@
     <input type="text" placeholder="Email or Username" name="email" required>
     <input type="password" placeholder="Password" name="password" required>
 
+    <input type="hidden" name="role" value="restaurant">
+    <button type="submit">Sign In</button>
+    
     <a href="forgot-username.html">Forgot username?</a><br>
     <a href="forgot.html">Forgot password?</a>
     
-    <input type="hidden" name="role" value="restaurant">
-    <button type="submit">Sign In</button>
   </form>
   <a href="signup.html">Don’t have an account? Sign Up</a><br>
   <a href="index.html">⬅ Back to Home</a>

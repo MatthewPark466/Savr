@@ -19,7 +19,7 @@ if (form) {
             }
 
             const username = snap.docs[0].data().username;
-            alert('✅ Your username is: ${username}');
+            alert(`✅ Your username is: ${username}`);
         }   catch (err) {
             console.error("Error fetching username:", err);
             alert("Error: " + err.message);
