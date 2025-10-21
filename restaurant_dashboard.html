@@ -9,10 +9,12 @@
     header h1 { margin:0; font-size:28px; }
     main { max-width:800px; margin:40px auto; padding:0 20px; text-align:center; }
     #menuContainer { margin-top:30px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:15px; }
-    .menu-item { background:#fff; padding:15px; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,0.1); text-align:left; }
+    .menu-item { background:#fff; padding:15px; border-radius:10px; box-shadow:0 3px 10px rgba(0,0,0,0.1); text-align:left; position: relative; }
     .menu-item h4 { color:#2c3e50; margin-bottom:8px; }
     .menu-item p { color:#555; font-size:14px; margin-bottom:6px; }
     .menu-item span { color:#27ae60; font-weight:bold; }
+    .delete-btn { position:absolute; top:10px; right:10px; background:#e74c3c; border:none; color:#fff; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:12px; }
+    .delete-btn:hover { background:#c0392b; }
     .actions { margin-top:25px; display:flex; justify-content:center; gap:15px; }
     button { background:#27ae60; border:none; color:#fff; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:15px; transition:background 0.2s; }
     button:hover { background:#219150; }
@@ -55,7 +57,7 @@
 
   <script type="module">
     import { db } from "./firebase.js";
-    import { collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { collection, addDoc, getDocs, query, orderBy, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
     import { logout } from "./firebase.js";
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -82,15 +84,24 @@
       async function loadListings() {
         menuContainer.innerHTML = "";
         const snapshot = await getDocs(query(collection(db,"listings"), orderBy("createdAt","desc")));
-        snapshot.forEach(doc => {
-          const data = doc.data();
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
           const card = document.createElement("div");
           card.className = "menu-item";
           card.innerHTML = `
             <h4>${data.itemName}</h4>
             <p>Price: <span>$${data.price}</span></p>
             <p>Quantity: ${data.stock} left</p>
+            <button class="delete-btn">Delete</button>
           `;
+          // Delete button
+          const deleteBtn = card.querySelector(".delete-btn");
+          deleteBtn.addEventListener("click", async () => {
+            if(confirm(`Delete "${data.itemName}"?`)) {
+              await deleteDoc(doc(db,"listings",docSnap.id));
+              loadListings();
+            }
+          });
           menuContainer.appendChild(card);
         });
       }
