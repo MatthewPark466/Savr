@@ -114,24 +114,55 @@
       <!-- Example skeleton cards -->
       <div class="restaurant-card">
         <h3>Restaurant</h3>
-        <p>Food Item — Price (Stock)</p>
-        <button>Order Now</button>
+        <p>Food Item — $9.99 (5 in stock)</p>
+        <button class="order-btn" data-name="Food Item" data-price="9.99">Order Now</button>
       </div>
       <div class="restaurant-card">
         <h3>Restaurant</h3>
-        <p>Food Item — Price (Stock)</p>
-        <button>Order Now</button>
+        <p>Food Item — $12.50 (3 in stock)</p>
+        <button class="order-btn" data-name="Food Item" data-price="12.50">Order Now</button>
       </div>
       <div class="restaurant-card">
         <h3>Restaurant</h3>
-        <p>Food Item — Price (Stock)</p>
-        <button>Order Now</button>
+        <p>Food Item — $7.25 (8 in stock)</p>
+        <button class="order-btn" data-name="Food Item" data-price="7.25">Order Now</button>
       </div>
     </div>
     <div class="empty">More listings coming soon...</div>
     <button id="logoutBtn">Logout</button>
   </main>
-  <script type="module" src="firebase.js"> </script>
+
+  <!-- Stripe.js -->
+  <script src="https://js.stripe.com/v3/"></script>
+
+  <!-- Firebase & Logout -->
+  <script type="module" src="firebase.js"></script>
   <script type="module" src="logout.js"></script>
+
+  <!-- Checkout integration -->
+  <script>
+    const stripe = Stripe("pk_test_YOUR_PUBLISHABLE_KEY_HERE"); // Replace with your Stripe publishable key
+
+    document.querySelectorAll(".order-btn").forEach(button => {
+      button.addEventListener("click", async () => {
+        const itemName = button.dataset.name;
+        const price = parseFloat(button.dataset.price);
+
+        try {
+          const res = await fetch("http://localhost:4242/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ itemName, price })
+          });
+
+          const data = await res.json();
+          await stripe.redirectToCheckout({ sessionId: data.id });
+        } catch (err) {
+          console.error("Checkout error:", err);
+          alert("Failed to redirect to checkout. Please try again.");
+        }
+      });
+    });
+  </script>
 </body>
 </html>
