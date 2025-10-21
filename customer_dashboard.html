@@ -4,103 +4,20 @@
   <meta charset="UTF-8">
   <title>SAVR | Customer Dashboard</title>
   <style>
-    body {
-      font-family: "Inter", "Segoe UI", Roboto, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-
-    header {
-      background: #27ae60;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 28px;
-    }
-
-    main {
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-
-    .restaurant-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-    }
-
-    .restaurant-card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      width: 270px;
-      padding: 20px;
-      text-align: left;
-      transition: transform 0.2s;
-    }
-
-    .restaurant-card:hover {
-      transform: translateY(-4px);
-    }
-
-    .restaurant-card h3 {
-      margin-bottom: 10px;
-      color: #27ae60;
-    }
-
-    .restaurant-card p {
-      font-size: 14px;
-      color: #555;
-    }
-
-    .restaurant-card button {
-      margin-top: 10px;
-      background: #27ae60;
-      border: none;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      font-size: 14px;
-      transition: background 0.2s;
-    }
-
-    .restaurant-card button:hover {
-      background: #219150;
-    }
-
-    #logoutBtn {
-      display: block;
-      margin: 40px auto;
-      background: #e74c3c;
-      border: none;
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    #logoutBtn:hover {
-      background: #c0392b;
-    }
-
-    /* Empty state */
-    .empty {
-      text-align: center;
-      color: #777;
-      margin-top: 50px;
-      font-size: 16px;
-    }
+    body { font-family:"Inter","Segoe UI",Roboto,sans-serif; background:#f4f6f8; margin:0; padding:0; color:#333; }
+    header { background:#27ae60; color:#fff; padding:20px; text-align:center; }
+    header h1 { margin:0; font-size:28px; }
+    main { max-width:1000px; margin:40px auto; padding:0 20px; }
+    .restaurant-list { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; }
+    .restaurant-card { background:#fff; border-radius:12px; box-shadow:0 3px 10px rgba(0,0,0,0.1); width:270px; padding:20px; text-align:left; transition:transform 0.2s; }
+    .restaurant-card:hover { transform:translateY(-4px); }
+    .restaurant-card h3 { margin-bottom:10px; color:#27ae60; }
+    .restaurant-card p { font-size:14px; color:#555; }
+    .restaurant-card button { margin-top:10px; background:#27ae60; border:none; color:#fff; padding:10px 14px; border-radius:8px; cursor:pointer; width:100%; font-size:14px; transition:background 0.2s; }
+    .restaurant-card button:hover { background:#219150; }
+    #logoutBtn { display:block; margin:40px auto; background:#e74c3c; border:none; color:#fff; padding:10px 20px; border-radius:8px; cursor:pointer; font-size:16px; }
+    #logoutBtn:hover { background:#c0392b; }
+    .empty { text-align:center; color:#777; margin-top:50px; font-size:16px; }
   </style>
 </head>
 <body>
@@ -110,59 +27,66 @@
   </header>
 
   <main>
-    <div class="restaurant-list">
-      <!-- Example skeleton cards -->
-      <div class="restaurant-card">
-        <h3>Restaurant</h3>
-        <p>Food Item — $9.99 (5 in stock)</p>
-        <button class="order-btn" data-name="Food Item" data-price="9.99">Order Now</button>
-      </div>
-      <div class="restaurant-card">
-        <h3>Restaurant</h3>
-        <p>Food Item — $12.50 (3 in stock)</p>
-        <button class="order-btn" data-name="Food Item" data-price="12.50">Order Now</button>
-      </div>
-      <div class="restaurant-card">
-        <h3>Restaurant</h3>
-        <p>Food Item — $7.25 (8 in stock)</p>
-        <button class="order-btn" data-name="Food Item" data-price="7.25">Order Now</button>
-      </div>
-    </div>
+    <div class="restaurant-list"></div>
     <div class="empty">More listings coming soon...</div>
     <button id="logoutBtn">Logout</button>
   </main>
 
-  <!-- Stripe.js -->
   <script src="https://js.stripe.com/v3/"></script>
+  <script type="module">
+    import { db } from "./firebase.js";
+    import { collection, getDocs, query, orderBy } from "firebase/firestore";
 
-  <!-- Firebase & Logout -->
+    async function loadListings() {
+      const listingsContainer = document.querySelector(".restaurant-list");
+      listingsContainer.innerHTML = "";
+      const snapshot = await getDocs(query(collection(db,"listings"),orderBy("createdAt","desc")));
+
+      if(snapshot.empty) {
+        document.querySelector(".empty").style.display = "block";
+        return;
+      } else document.querySelector(".empty").style.display = "none";
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const card = document.createElement("div");
+        card.className = "restaurant-card";
+        card.innerHTML = `
+          <h3>${data.restaurantName}</h3>
+          <p>${data.itemName} — $${data.price} (${data.stock} in stock)</p>
+          <button class="order-btn" data-name="${data.itemName}" data-price="${data.price}">Order Now</button>
+        `;
+        listingsContainer.appendChild(card);
+      });
+      attachCheckoutHandlers();
+    }
+
+    function attachCheckoutHandlers() {
+      const stripe = Stripe("pk_test_51SG03tImnxhK2hGwbcA0XDTsVLtNg38TBWhoh3XOJGXzzTMHix7fXWQdB5SxyGvhxUp0d8F8oGwFqj9uYaqAucTD006CZLyBl1");
+      document.querySelectorAll(".order-btn").forEach(button => {
+        button.addEventListener("click", async () => {
+          const itemName = button.dataset.name;
+          const price = parseFloat(button.dataset.price);
+          try {
+            const res = await fetch("http://localhost:4242/create-checkout-session", {
+              method:"POST",
+              headers:{"Content-Type":"application/json"},
+              body:JSON.stringify({ itemName, price })
+            });
+            const data = await res.json();
+            stripe.redirectToCheckout({ sessionId: data.id });
+          } catch(err) {
+            console.error("Checkout error:",err);
+            alert("Failed to redirect to checkout.");
+          }
+        });
+      });
+    }
+
+    loadListings();
+  </script>
+
   <script type="module" src="firebase.js"></script>
   <script type="module" src="logout.js"></script>
-
-  <!-- Checkout integration -->
-  <script>
-    const stripe = Stripe("pk_test_51SG03tImnxhK2hGwbcA0XDTsVLtNg38TBWhoh3XOJGXzzTMHix7fXWQdB5SxyGvhxUp0d8F8oGwFqj9uYaqAucTD006CZLyBl1"); // Replace with your Stripe publishable key
-
-    document.querySelectorAll(".order-btn").forEach(button => {
-      button.addEventListener("click", async () => {
-        const itemName = button.dataset.name;
-        const price = parseFloat(button.dataset.price);
-
-        try {
-          const res = await fetch("http://localhost:4242/create-checkout-session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ itemName, price })
-          });
-
-          const data = await res.json();
-          await stripe.redirectToCheckout({ sessionId: data.id });
-        } catch (err) {
-          console.error("Checkout error:", err);
-          alert("Failed to redirect to checkout. Please try again.");
-        }
-      });
-    });
-  </script>
 </body>
 </html>
