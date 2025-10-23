@@ -110,28 +110,79 @@
   </header>
 
   <main>
-    <div class="restaurant-list">
-      <!-- Example skeleton cards -->
-      <div class="restaurant-card">
-        <h3>Restaurant</h3>
-        <p>Food Item — Price (Stock)</p>
-        <button>Order Now</button>
-      </div>
-      <div class="restaurant-card">
-        <h3>Restaurant</h3>
-        <p>Food Item — Price (Stock)</p>
-        <button>Order Now</button>
-      </div>
-      <div class="restaurant-card">
-        <h3>Restaurant</h3>
-        <p>Food Item — Price (Stock)</p>
-        <button>Order Now</button>
-      </div>
-    </div>
-    <div class="empty">More listings coming soon...</div>
+    <div class="restaurant-list" id="listingsContainer"></div>
+    <div class="empty" id="emptyState">More listings coming soon...</div>
     <button id="logoutBtn">Logout</button>
   </main>
-  <script type="module" src="firebase.js"> </script>
+
+  <script type="module">
+    import { db, logout } from "./firebase.js";
+    import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+    const listingsContainer = document.getElementById("listingsContainer");
+    const emptyState = document.getElementById("emptyState");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // Stripe public key (frontend only)
+    const stripe = Stripe("pk_test_51SG03tImnxhK2hGwbcA0XDTsVLtNg38TBWhoh3XOJGXzzTMHix7fXWQdB5SxyGvhxUp0d8F8oGwFqj9uYaqAucTD006CZLyBl1");
+
+    // Logout
+    logoutBtn.addEventListener("click", async () => {
+      await logout();
+      window.location.href = "login.html";
+    });
+
+    // Load restaurant listings from Firestore
+    async function loadListings() {
+      listingsContainer.innerHTML = "";
+      const snapshot = await getDocs(query(collection(db,"listings"), orderBy("createdAt","desc")));
+
+      if(snapshot.empty) {
+        emptyState.style.display = "block";
+        return;
+      }
+      emptyState.style.display = "none";
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const card = document.createElement("div");
+        card.className = "restaurant-card";
+        card.innerHTML = `
+          <h3>${data.restaurantName}</h3>
+          <p>${data.itemName} — $${data.price} (${data.stock} left)</p>
+          <button class="order-btn" data-name="${data.itemName}" data-price="${data.price}">Order Now</button>
+        `;
+        listingsContainer.appendChild(card);
+      });
+
+      // Add click event for all order buttons
+      document.querySelectorAll(".order-btn").forEach(button => {
+        button.addEventListener("click", async () => {
+          const itemName = button.dataset.name;
+          const price = button.dataset.price;
+
+          try {
+            const res = await fetch("http://localhost:4242/create-checkout-session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ itemName, price })
+            });
+
+            const session = await res.json();
+            stripe.redirectToCheckout({ sessionId: session.id });
+          } catch(err) {
+            console.error(err);
+            alert("Failed to start checkout.");
+          }
+        });
+      });
+    }
+
+    loadListings();
+  </script>
+
+  <script src="https://js.stripe.com/v3/"></script>
+  <script type="module" src="firebase.js"></script>
   <script type="module" src="logout.js"></script>
 </body>
 </html>
