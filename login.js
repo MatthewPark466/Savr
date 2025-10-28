@@ -21,8 +21,8 @@ if (loginForm) {
       if(role === "customer"){
         window.location.href = "customer_dashboard.html";
       } else {
-        console.log("Redirecting to restaurant setup page");
-        window.location.href = "restaurant_setup.html";
+        console.log("Redirecting to restaurant dashboard");
+        window.location.href = "restaurant_dashboard.html";
       }
     } catch (err) {
       alert("Login failed: " + err.code);

@@ -23,7 +23,7 @@ if (signupForm) {
         window.location.href = "customer_dashboard.html";
 
       } else {
-        window.location.href = "restaurant_dashboard.html";
+        window.location.href = "restaurant_setup.html";
       }
     } catch (err) {
       alert("Signup failed: " + err.code);
